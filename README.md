@@ -1,8 +1,5 @@
 # BiometricDemo (iOS)
 
-AUT for the MagicPod biometric-authentication POC
-([magicpod#31854](https://github.com/magicpod-internal/magicpod/issues/31854)).
-
 A deliberately small SwiftUI app that exercises every iOS biometric path we need
 to automate, and reports the outcome as a machine-readable string so a test can
 assert on it without parsing localized system text.
