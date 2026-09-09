@@ -149,7 +149,7 @@ Verified on iPhone 17 Pro / iOS 27.0 simulator.
    (The tapping half is not yet verified here — no tap tooling in this
    environment. Appium can do it with `mobile: alert`.)
 
-   **Implication for the MagicPod step design:** BrowserStack's
+   **Implication for test-step design:** BrowserStack's
    `pass` / `fail` / `cancel` three-value model does not describe iOS honestly.
    A "fail the biometric" step should mean "send one non-matching scan"; the
    prompt stays up and the branch after it is ordinary UI. Android's
@@ -190,11 +190,11 @@ Verified on iPhone 17 Pro / iOS 27.0 simulator.
 
    Cross-posting the "wrong" notification still authenticated on both:
    `pearl.match` → Touch ID device = SUCCESS, `fingerTouch.match` → Face ID
-   device = SUCCESS. So a MagicPod step does **not** need a device→biometry map
+   device = SUCCESS. So a test step does **not** need a device→biometry map
    to deliver a match. The rendered prompt still differs, though, so a test that
    taps or asserts on the prompt itself does care.
 
 ## Next
 
 - An Android counterpart (`BiometricPrompt`, `BIOMETRIC_STRONG` + `CryptoObject`)
-- Wire both into a MagicPod test step prototype
+- Wire both into a test-step prototype

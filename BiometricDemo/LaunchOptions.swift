@@ -1,8 +1,8 @@
 import Foundation
 
 /// Launch-argument overrides so a test can put the app into a known state
-/// without tapping anything first. MagicPod can pass these through the iOS
-/// `processArguments` capability.
+/// without tapping anything first. An automation tool can pass these through the
+/// iOS `processArguments` capability.
 ///
 ///   --gate-on / --gate-off      force the launch gate for this run
 ///   --auto-auth <MODE>          authenticate right after the main screen appears
