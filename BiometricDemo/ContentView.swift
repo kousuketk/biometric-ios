@@ -73,9 +73,6 @@ struct ContentView: View {
             Button("Biometrics only") { service.authenticate(mode: .biometricsOnly) }
                 .buttonStyle(.borderedProminent)
                 .accessibilityIdentifier("auth_biometrics_button")
-            Button("Biometrics or passcode") { service.authenticate(mode: .biometricsOrPasscode) }
-                .buttonStyle(.borderedProminent)
-                .accessibilityIdentifier("auth_biometrics_or_passcode_button")
         }
     }
 

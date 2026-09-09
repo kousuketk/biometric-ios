@@ -6,7 +6,7 @@ import Foundation
 ///
 ///   --gate-on / --gate-off      force the launch gate for this run
 ///   --auto-auth <MODE>          authenticate right after the main screen appears
-///                               MODE = BIOMETRICS_ONLY | BIOMETRICS_OR_PASSCODE | KEYCHAIN
+///                               MODE = BIOMETRICS_ONLY | KEYCHAIN
 ///   --reset-keychain            delete the stored secret on launch
 ///   --seed-keychain             store the demo secret on launch
 enum LaunchOptions {

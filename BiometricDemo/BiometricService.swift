@@ -5,13 +5,10 @@ import LocalAuthentication
 enum AuthMode: String, CaseIterable {
     /// Biometrics only. Fails instead of silently falling back to the passcode.
     case biometricsOnly = "BIOMETRICS_ONLY"
-    /// Biometrics with the device passcode as a fallback.
-    case biometricsOrPasscode = "BIOMETRICS_OR_PASSCODE"
 
     var policy: LAPolicy {
         switch self {
         case .biometricsOnly: return .deviceOwnerAuthenticationWithBiometrics
-        case .biometricsOrPasscode: return .deviceOwnerAuthentication
         }
     }
 }

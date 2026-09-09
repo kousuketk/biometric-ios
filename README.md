@@ -29,7 +29,6 @@ Bundle ID: `com.magicpod.biometricdemo`
 | Path | Why it is in here |
 |---|---|
 | `LAContext.evaluatePolicy(.deviceOwnerAuthenticationWithBiometrics)` | The plain biometric gate. This is what `mobile: sendBiometricMatch` drives. |
-| `LAContext.evaluatePolicy(.deviceOwnerAuthentication)` | Biometrics with passcode fallback. |
 | Keychain item with `.biometryCurrentSet` | The Secure Enclave path. Cloud farms that instrument `LAContext` cannot intercept this one, so it is worth having a case that exercises it. |
 | Launch gate | The "mandatory security layer" case: nothing is reachable until authentication succeeds. This is the flow that blocks E2E automation today. |
 | `canEvaluatePolicy` reporting | Distinguishes not-enrolled / not-available / passcode-not-set before any prompt appears. |
@@ -51,7 +50,6 @@ The result block is rendered first so a test can read it without scrolling.
 | `refresh_button` | Button | Re-reads device state |
 | `allow_fallback_toggle` | Switch | Off hides the prompt's fallback button |
 | `auth_biometrics_button` | Button | Biometrics only |
-| `auth_biometrics_or_passcode_button` | Button | Biometrics or passcode |
 | `keychain_save_button` | Button | Stores the secret with `.biometryCurrentSet` |
 | `keychain_read_button` | Button | Reads it back (triggers the prompt) |
 | `keychain_delete_button` | Button | Deletes it |
@@ -79,7 +77,7 @@ from a known state without tapping anything first.
 | Argument | Effect |
 |---|---|
 | `--gate-on` / `--gate-off` | Force the launch gate on/off for this run |
-| `--auto-auth <MODE>` | Authenticate as soon as the main screen appears. `MODE` = `BIOMETRICS_ONLY`, `BIOMETRICS_OR_PASSCODE`, `KEYCHAIN` |
+| `--auto-auth <MODE>` | Authenticate as soon as the main screen appears. `MODE` = `BIOMETRICS_ONLY`, `KEYCHAIN` |
 | `--seed-keychain` | Store the demo secret on launch |
 | `--reset-keychain` | Delete the stored secret on launch |
 
@@ -155,25 +153,19 @@ Verified on iPhone 17 Pro / iOS 27.0 simulator.
    prompt stays up and the branch after it is ordinary UI. Android's
    `BiometricPrompt` behaves the same way — `onAuthenticationFailed()` fires but
    the prompt remains — so the two platforms are symmetric here.
-3. **Passcode fallback is reachable, but not via a single no-match.** With
-   biometry enrolled, one no-match under `.deviceOwnerAuthentication` shows the
-   same *Try Face ID Again* / *Cancel* alert as the biometrics-only policy — no
-   *Enter Passcode*. iOS withholds the fallback until the biometric retry budget
-   is spent, and no-matches posted while the alert is up do not spend it.
+3. **Passcode fallback is reachable, but not via a single no-match.** Measured
+   while this app still offered a `.deviceOwnerAuthentication` button, which it
+   no longer does. With biometry enrolled, one no-match under that policy showed
+   the same *Try Face ID Again* / *Cancel* alert as the biometrics-only policy —
+   no *Enter Passcode*. iOS withholds the fallback until the biometric retry
+   budget is spent, and no-matches posted while the alert is up do not spend it.
 
-   The deterministic, tap-free way to exercise the fallback is to **un-enroll
-   biometry first**:
-
-   ```bash
-   xcrun simctl spawn <UDID> notifyutil -s com.apple.BiometricKit.enrollmentChanged 0
-   xcrun simctl spawn <UDID> notifyutil -p com.apple.BiometricKit.enrollmentChanged
-   xcrun simctl launch <UDID> com.magicpod.biometricdemo --gate-off --auto-auth BIOMETRICS_OR_PASSCODE
-   ```
-
-   That lands straight on the system passcode screen ("Enter iPhone Passcode for
-   BiometricDemo", with our `localizedReason` underneath). It is also the more
-   realistic scenario — a device with no enrolled biometry is common; five
-   consecutive failed scans are not.
+   The deterministic, tap-free way to reach the fallback was to **un-enroll
+   biometry first**, which lands straight on the system passcode screen ("Enter
+   iPhone Passcode for BiometricDemo", with our `localizedReason` underneath).
+   That is also the more realistic scenario — a device with no enrolled biometry
+   is common; five consecutive failed scans are not. Re-add the policy to
+   `AuthMode` if this needs exercising again.
 4. **The Keychain `.biometryCurrentSet` path works on the Simulator** and is
    unlocked by the same match notification (`result_detail` shows
    `mode=KEYCHAIN value=s3cr3t-42`). This is the path BrowserStack cannot
