@@ -6,9 +6,7 @@ import Foundation
 ///
 ///   --gate-on / --gate-off      force the launch gate for this run
 ///   --auto-auth <MODE>          authenticate right after the main screen appears
-///                               MODE = BIOMETRICS_ONLY | KEYCHAIN
-///   --reset-keychain            delete the stored secret on launch
-///   --seed-keychain             store the demo secret on launch
+///                               MODE = BIOMETRICS_ONLY
 enum LaunchOptions {
     private static var arguments: [String] { ProcessInfo.processInfo.arguments }
 
@@ -25,8 +23,4 @@ enum LaunchOptions {
         else { return nil }
         return arguments[index + 1]
     }
-
-    static var resetKeychain: Bool { arguments.contains("--reset-keychain") }
-
-    static var seedKeychain: Bool { arguments.contains("--seed-keychain") }
 }

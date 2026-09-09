@@ -21,19 +21,11 @@ struct ContentView: View {
     }
 
     private func applyLaunchOptions() {
-        if LaunchOptions.resetKeychain {
-            service.deleteKeychainSecret()
-        }
-        if LaunchOptions.seedKeychain {
-            service.saveKeychainSecret()
-        }
-        guard !gateActive, let mode = LaunchOptions.autoAuth else { return }
-        switch mode {
-        case "KEYCHAIN": service.readKeychainSecret()
-        default:
-            guard let authMode = AuthMode(rawValue: mode) else { return }
-            service.authenticate(mode: authMode)
-        }
+        guard !gateActive,
+              let mode = LaunchOptions.autoAuth,
+              let authMode = AuthMode(rawValue: mode)
+        else { return }
+        service.authenticate(mode: authMode)
     }
 
     private var mainScreen: some View {
@@ -47,7 +39,6 @@ struct ContentView: View {
                 resultSection
                 deviceStateSection
                 authSection
-                keychainSection
                 gateSection
             }
             .padding(20)
@@ -76,19 +67,6 @@ struct ContentView: View {
         }
     }
 
-    private var keychainSection: some View {
-        section("Keychain (.biometryCurrentSet)") {
-            Button("Save secret") { service.saveKeychainSecret() }
-                .buttonStyle(.bordered)
-                .accessibilityIdentifier("keychain_save_button")
-            Button("Read secret") { service.readKeychainSecret() }
-                .buttonStyle(.borderedProminent)
-                .accessibilityIdentifier("keychain_read_button")
-            Button("Delete secret") { service.deleteKeychainSecret() }
-                .buttonStyle(.bordered)
-                .accessibilityIdentifier("keychain_delete_button")
-        }
-    }
 
     private var gateSection: some View {
         section("Launch gate") {

@@ -77,47 +77,6 @@ final class BiometricService: ObservableObject {
         }
     }
 
-    /// Exercises the Keychain access-control path, which is separate from
-    /// evaluatePolicy: the match happens inside the Secure Enclave and never
-    /// reaches app code. Cloud device farms that instrument LAContext cannot
-    /// intercept this one.
-    func readKeychainSecret() {
-        outcome = .running
-        detail = "mode=KEYCHAIN"
-        Task.detached {
-            do {
-                let secret = try KeychainStore.read(prompt: "Authenticate to read the Keychain secret")
-                await MainActor.run {
-                    self.attemptCount += 1
-                    self.outcome = .success
-                    self.detail = "mode=KEYCHAIN value=\(secret)"
-                }
-            } catch {
-                await MainActor.run {
-                    self.attemptCount += 1
-                    self.outcome = AuthOutcome.from(error)
-                    self.detail = "mode=KEYCHAIN \(ErrorFormatter.describe(error))"
-                }
-            }
-        }
-    }
-
-    func saveKeychainSecret() {
-        do {
-            try KeychainStore.save(secret: KeychainStore.demoSecret)
-            outcome = .idle
-            detail = "mode=KEYCHAIN saved with .biometryCurrentSet"
-        } catch {
-            outcome = .error
-            detail = "mode=KEYCHAIN save failed: \(ErrorFormatter.describe(error))"
-        }
-    }
-
-    func deleteKeychainSecret() {
-        KeychainStore.delete()
-        outcome = .idle
-        detail = "mode=KEYCHAIN deleted"
-    }
 
     func reset() {
         outcome = .idle

@@ -29,7 +29,6 @@ Bundle ID: `com.magicpod.biometricdemo`
 | Path | Why it is in here |
 |---|---|
 | `LAContext.evaluatePolicy(.deviceOwnerAuthenticationWithBiometrics)` | The plain biometric gate. This is what `mobile: sendBiometricMatch` drives. |
-| Keychain item with `.biometryCurrentSet` | The Secure Enclave path. Cloud farms that instrument `LAContext` cannot intercept this one, so it is worth having a case that exercises it. |
 | Launch gate | The "mandatory security layer" case: nothing is reachable until authentication succeeds. This is the flow that blocks E2E automation today. |
 | `canEvaluatePolicy` reporting | Distinguishes not-enrolled / not-available / passcode-not-set before any prompt appears. |
 
@@ -50,9 +49,6 @@ The result block is rendered first so a test can read it without scrolling.
 | `refresh_button` | Button | Re-reads device state |
 | `allow_fallback_toggle` | Switch | Off hides the prompt's fallback button |
 | `auth_biometrics_button` | Button | Biometrics only |
-| `keychain_save_button` | Button | Stores the secret with `.biometryCurrentSet` |
-| `keychain_read_button` | Button | Reads it back (triggers the prompt) |
-| `keychain_delete_button` | Button | Deletes it |
 | `gate_toggle` | Switch | Arms the launch gate for the next cold launch |
 | `gate_title` / `gate_status` / `gate_detail` | StaticText | Gate overlay |
 | `gate_unlock_button` / `gate_disable_button` | Button | Gate overlay |
@@ -77,9 +73,7 @@ from a known state without tapping anything first.
 | Argument | Effect |
 |---|---|
 | `--gate-on` / `--gate-off` | Force the launch gate on/off for this run |
-| `--auto-auth <MODE>` | Authenticate as soon as the main screen appears. `MODE` = `BIOMETRICS_ONLY`, `KEYCHAIN` |
-| `--seed-keychain` | Store the demo secret on launch |
-| `--reset-keychain` | Delete the stored secret on launch |
+| `--auto-auth <MODE>` | Authenticate as soon as the main screen appears. `MODE` = `BIOMETRICS_ONLY` |
 
 ```bash
 xcrun simctl launch booted com.magicpod.biometricdemo --gate-off --auto-auth BIOMETRICS_ONLY
@@ -167,9 +161,13 @@ Verified on iPhone 17 Pro / iOS 27.0 simulator.
    is common; five consecutive failed scans are not. Re-add the policy to
    `AuthMode` if this needs exercising again.
 4. **The Keychain `.biometryCurrentSet` path works on the Simulator** and is
-   unlocked by the same match notification (`result_detail` shows
-   `mode=KEYCHAIN value=s3cr3t-42`). This is the path BrowserStack cannot
-   instrument on real devices, so it is a useful contrast case for phase 2.
+   unlocked by the same match notification. Measured while this app still had a
+   Keychain section, which it no longer does. Two things make it worth
+   remembering: it is enforced by the Secure Enclave rather than by app code, so
+   instrumenting `LAContext` cannot bypass it; and `.biometryCurrentSet`
+   invalidates the item as soon as the enrolled set changes, which means the
+   enrollment has to be in place *before* the app creates the item. That is why
+   enrollment belongs in device start-up rather than in a test step.
 5. **`biometryType` is only populated after `canEvaluatePolicy` runs.** Reading
    it first returns `NONE`; the app calls them in the right order.
 6. **Touch ID vs Face ID is a device-model property, not an iOS-version one**, and
